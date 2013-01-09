@@ -1,0 +1,14 @@
+{
+    "folders":
+    [
+        {
+            "path": "node",
+            "file_exclude_patterns": ["*.pyc", "*.pyo"]
+        },
+
+        {
+            "path": "identity_server",
+            "file_exclude_patterns": ["*.pyc", "*.pyo"]
+        }
+    ]
+}
