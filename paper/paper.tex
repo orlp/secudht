@@ -1,0 +1,102 @@
+\title{Securing Kademlia with a low overhead PKI}
+\author{Orson Peters}
+\date{\today}
+
+\documentclass[12pt]{article}
+
+\usepackage{enumitem}
+\setdescription{leftmargin=\parindent,labelindent=1cm}
+\usepackage[parfill]{parskip}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent This paper outlines a low overhead protocol that creates a
+robust public-key infrastructure (PKI) to secure Kademlia.  Presented here is a
+centralized solution that uses a certification authority that provides identity
+to nodes. If correctly implemented this solution implicitly resists common
+attacks aimed at DHTs and can be extended in various ways to further limit
+malicious activity to a minimum, depending on the use case.  This solution is
+unprecedented in low overhead (both latency and bandwidth) and supporting a
+recursive/iterative routing hybrid.
+\end{abstract}
+
+\section{Introduction}\label{introduction} Kademlia \cite{kademlia} is a
+high-profile Distributed Hash Table (DHT). Used in many P2P applications
+(LimeWire, Gnutella, Overnet, EDonkey2000, eMule, BitTorrent, etc) it is the
+most used DHT around. For good reason, it's nifty topology allows for fast,
+flexible and low-overhead routing. However, Kademlia does not concern itself
+with security, and is vulnerable to many attacks.
+
+In this paper we expand on the work in \cite{aiello2008tempering}. Similarly,
+we propose a centralized certificate authority (CA) trusted by all
+participating nodes.  However, we reduce overhead by introducing optimizations
+such as smaller signatures, timestamps instead of nonces and a novel way to
+pick randomized node ids. Through the use of secure request tokens and node ids
+we also enable a hybrid between recursive and iterative routing for lower
+latency while maintaining security.
+
+First we discuss what attacks Kademlia is vulnerable to. Then we propose the protocol, and how this differs from previous solutions. Last we evaluate how well the attacks on Kademlia are mitigated and what holes are still left open.
+
+\section{Terminology}\label{terminology}
+
+Throughout this paper we use the following terminology:
+
+\begin{description}[noitemsep]
+    \item[$a || b$] - the concatenation of $a$ and $b$
+    \item[$H(x)$] - the SHA-1 hash of $x$
+    \item[$K^+$] - the public key of the Ed25519 key pair $K$
+    \item[$K^-$] - the private key of the Ed25519 key pair $K$
+    \item[$Sign(x, K)$] - the Ed25519 signature of x signed with the key pair $K$
+    \item[$Verify(s, x, K^+)$] - verification of the Ed25519 signature $s$ of message $x$ with $K^+$
+\end{description}
+
+Ed25519 \cite{bernstein2011high} is a novel public key signing algorithm, with
+the desirable property of having small signatures and public keys (respectively
+64 and 32 bytes). Furthermore, it is fast, highly secure and allows
+randomization of a public key without knowing the private key (more on this
+later). Listed below are the most prominent attacks against Kademlia, later we
+will discuss how our protocol mitigates these.
+
+
+\section{Attacks}
+Kademlia suffers from a wide range of attacks. In this paper
+we only discuss and prevent attacks against the network infrastructure - not
+network content. We do however provide a provable identity for every node,
+allowing various solutions like blacklists and reputation systems to secure
+content.
+
+\paragraph{Man In The Middle.} All unsecured internet protocols suffer from
+this attack. Because the transport layer is not secure any intermediate hop can
+change or drop any packet, and any party might be able to forge packets.
+
+\paragraph{Replay attack.} This is a more subtle version of the Man In The
+Middle (MITM) attack. An adversary eavesdrops some secured communication and
+stores it. Now if the communication does not contain any temporary resource
+such as a timestamp or nonce (number used once), the communication gets
+accepted when sent by the adversary - breaking the security. Worse, if the
+communication does not address a receiver for the content the adversary may
+\emph{replay} the communication to any party. Replay attacks are attacks in
+it's own right, but may be used to set up other attacks. For example, if a
+secured request for content is sent out, but does not contain the intended
+receiver for the request an adversary might send this request to many content
+providers, effectively creating a cheap and anonymous DDOS attack on the
+requester.
+
+\paragraph{Routing attack.} Each Kademlia node keeps track of a number of nodes
+to communicate with - the routing table. A routing attack is aimed at this
+table, filling it with either invalid, offline or even malicious nodes,
+hampering or even stopping the connectivity of the attacked node.
+
+\paragraph{Eclipse attack.} The Eclipse attack \cite{singh2006eclipse} is a
+routing attack where malicious nodes exploit the topology of the network to
+"surround" a victim node. If successful all or a majority of the routing of the
+victim node goes through the malicious nodes, allowing them to manipulate or
+block the communication.
+
+
+\bibliographystyle{ieeetr}
+\bibliography{paper}
+
+\end{document}

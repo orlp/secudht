@@ -1,0 +1,21 @@
+\begin{thebibliography}{1}
+
+\bibitem{kademlia}
+P.~Maymounkov and D.~Mazieres, ``Kademlia: A peer-to-peer information system
+  based on the xor metric,'' {\em Peer-to-Peer Systems}, pp.~53--65, 2002.
+
+\bibitem{aiello2008tempering}
+L.~Aiello, M.~Milanesio, G.~Ruffo, and R.~Schifanella, ``Tempering kademlia
+  with a robust identity based system,'' in {\em Peer-to-Peer Computing, 2008.
+  P2P'08. Eighth International Conference on}, pp.~30--39, IEEE, 2008.
+
+\bibitem{bernstein2011high}
+D.~Bernstein, N.~Duif, T.~Lange, P.~Schwabe, and B.~Yang, ``High-speed
+  high-security signatures,'' {\em Cryptographic Hardware and Embedded
+  Systems--CHES 2011}, pp.~124--142, 2011.
+
+\bibitem{singh2006eclipse}
+A.~Singh {\em et~al.}, ``Eclipse attacks on overlay networks: Threats and
+  defenses,'' in {\em In IEEE INFOCOM}, Citeseer, 2006.
+
+\end{thebibliography}
