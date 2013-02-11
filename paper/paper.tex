@@ -126,23 +126,34 @@ the network has a synchronized time, called the network time. While its not
 necessary to synchronize the time through the CA, it is the most practical and
 easily secured way of doing so - therefore we specify it in the protocol.
 
+
 \subsection{Synchronizing time}
 
-A node wanting to get the network time must generate a nonce, and send it to
-the CA along with some synchronize time opcode. The CA then replies with
-$nonce, network\_time, sign(nonce || network\_time, CAK^+)$. The node then
-verifies the nonce and the signature. Furthermore, the node must keep track of
-the time the request took (the round-trip-time). If this is more than a certain
-timeout, say 5 seconds, the node must reject the reply. Last, if everything
-was valid a node should substract half the round-trip-time from the time as a
-mean of crude accuracy improvement.
+Before anything, a node should synchronize it's time to the network time. A
+node wanting to get the network time must generate a nonce, and send it to the
+CA along with some synchronize time opcode. The CA then replies with $nonce,
+network\_time, sign(nonce || network\_time, CAK^+)$. The node then verifies the
+nonce and the signature. Furthermore, the node must keep track of the time the
+request took (the round-trip-time). If this is more than a certain timeout, say
+5 seconds, the node must reject the reply. Last, if everything was valid a node
+should substract half the round-trip-time from the time as a mean of crude
+accuracy improvement.
 
-Because the reply is signed and contains a nonce all MITM attacks and replay
-attacks are futile. Because the node rejects old replies a MITM can not delay
-a response in an attempt to desynchronize the network time. Assuming the worst
-case where a MITM maximized the delay the network time is desynchronized by at
-most $timeout/2$ seconds, which is very acceptable.
+Because the reply is signed and contains a nonce all active MITM attacks and
+replay attacks are futile. Because the node rejects old replies a MITM can not
+delay a response in an attempt to desynchronize the network time. Assuming the
+worst case where a MITM maximized the delay the network time is desynchronized
+by at most $timeout/2$ seconds, which is very acceptable.
 
+
+\subsection{Getting a certificate}
+
+After synchronizing to the network time a node needs a certificate from the CA
+in order to be able to participate in the network. The CA signs the nodes
+identity, as well as a public key of the node, allowing the node to
+subsequently prove ownership of the certificate to peers.
+
+First the node must generate a new public/private keypair.
 
 
 \bibliographystyle{ieeetr}
