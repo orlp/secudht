@@ -25,19 +25,23 @@ recursive/iterative routing hybrid.
 \section{Introduction}\label{introduction} Kademlia \cite{kademlia} is a
 high-profile Distributed Hash Table (DHT). Used in many P2P applications
 (LimeWire, Gnutella, Overnet, EDonkey2000, eMule, BitTorrent, etc) it is the
-most used DHT around. For good reason, it's nifty topology allows for fast,
+most used DHT around. For good reason, its nifty topology allows for fast,
 flexible and low-overhead routing. However, Kademlia does not concern itself
 with security, and is vulnerable to many attacks.
 
 In this paper we expand on the work in \cite{aiello2008tempering}. Similarly,
 we propose a centralized certificate authority (CA) trusted by all
-participating nodes.  However, we reduce overhead by introducing optimizations
+participating nodes. However, we reduce overhead by introducing optimizations
 such as smaller signatures, timestamps instead of nonces and a novel way to
 pick randomized node ids. Through the use of secure request tokens and node ids
 we also enable a hybrid between recursive and iterative routing for lower
 latency while maintaining security.
 
-First we discuss what attacks Kademlia is vulnerable to. Then we propose the protocol, and how this differs from previous solutions. Last we evaluate how well the attacks on Kademlia are mitigated and what holes are still left open.
+First we discuss what attacks Kademlia is vulnerable to. Then we propose the
+protocol, and how this differs from previous solutions. Afterwards we discuss
+how well the attacks on Kademlia are mitigated and what holes are potentially
+still left open. Last, we evaluate the overhead of the system and further
+improvements.
 
 \section{Terminology}\label{terminology}
 
@@ -56,11 +60,12 @@ Ed25519 \cite{bernstein2011high} is a novel public key signing algorithm, with
 the desirable property of having small signatures and public keys (respectively
 64 and 32 bytes). Furthermore, it is fast, highly secure and allows
 randomization of a public key without knowing the private key (more on this
-later). Listed below are the most prominent attacks against Kademlia, later we
-will discuss how our protocol mitigates these.
+later). These properties make it ideal for our protocol. 
+
 
 
 \section{Attacks}
+
 Kademlia suffers from a wide range of attacks. In this paper
 we only discuss and prevent attacks against the network infrastructure - not
 network content. We do however provide a provable identity for every node,
@@ -78,7 +83,7 @@ such as a timestamp or nonce (number used once), the communication gets
 accepted when sent by the adversary - breaking the security. Worse, if the
 communication does not address a receiver for the content the adversary may
 \emph{replay} the communication to any party. Replay attacks are attacks in
-it's own right, but may be used to set up other attacks. For example, if a
+its own right, but may be used to set up other attacks. For example, if a
 secured request for content is sent out, but does not contain the intended
 receiver for the request an adversary might send this request to many content
 providers, effectively creating a cheap and anonymous DDOS attack on the
@@ -94,6 +99,50 @@ routing attack where malicious nodes exploit the topology of the network to
 "surround" a victim node. If successful all or a majority of the routing of the
 victim node goes through the malicious nodes, allowing them to manipulate or
 block the communication.
+
+\paragraph{Distributed Denial of Service attack.} The Distributed Denial of
+Service attack (DDoS) is an attack where many computers flood one computer with
+requests, requiring so much resources the entire service is stopped or slowed
+down to a crawl.
+
+\paragraph{Sybil attack.} The Sybil attack \cite{douceur2002sybil} works by
+having one adversary provide many identities to the network, effectively
+gaining power. While it is not an attack on its own it can be used to greatly
+increase other attacks in effectiveness.
+
+Kademlia suffers from all attacks described above. Our protocol is designed
+to explicitly or implicitly resist all of them.
+
+
+ 
+\section{The protocol}
+
+There exists a centralized certificate authority, the
+CA, that is known to and trusted by all nodes participating in the network.
+Furthermore, everyone knows the CAs public key, $CAK^+$.
+
+Because we use timestamps instead of nonces is most locations in this protocol
+the network has a synchronized time, called the network time. While its not
+necessary to synchronize the time through the CA, it is the most practical and
+easily secured way of doing so - therefore we specify it in the protocol.
+
+\subsection{Synchronizing time}
+
+A node wanting to get the network time must generate a nonce, and send it to
+the CA along with some synchronize time opcode. The CA then replies with
+$nonce, network\_time, sign(nonce || network\_time, CAK^+)$. The node then
+verifies the nonce and the signature. Furthermore, the node must keep track of
+the time the request took (the round-trip-time). If this is more than a certain
+timeout, say 5 seconds, the node must reject the reply. Last, if everything
+was valid a node should substract half the round-trip-time from the time as a
+mean of crude accuracy improvement.
+
+Because the reply is signed and contains a nonce all MITM attacks and replay
+attacks are futile. Because the node rejects old replies a MITM can not delay
+a response in an attempt to desynchronize the network time. Assuming the worst
+case where a MITM maximized the delay the network time is desynchronized by at
+most $timeout/2$ seconds, which is very acceptable.
+
 
 
 \bibliographystyle{ieeetr}

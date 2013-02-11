@@ -18,4 +18,8 @@ D.~Bernstein, N.~Duif, T.~Lange, P.~Schwabe, and B.~Yang, ``High-speed
 A.~Singh {\em et~al.}, ``Eclipse attacks on overlay networks: Threats and
   defenses,'' in {\em In IEEE INFOCOM}, Citeseer, 2006.
 
+\bibitem{douceur2002sybil}
+J.~Douceur, ``The sybil attack,'' {\em Peer-to-peer Systems}, pp.~251--260,
+  2002.
+
 \end{thebibliography}
