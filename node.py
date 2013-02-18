@@ -115,6 +115,7 @@ class Node(object):
                 return
 
             scalar, user_id, expiry, certificate = data[:32], data[32:36], data[36:38], data[38:]
+
             
             public_key, private_key = ed25519.add_scalar(scalar, self.last_certificate_request_public_key, self.last_certificate_request_private_key)
 
@@ -122,11 +123,15 @@ class Node(object):
                 self.public_key = public_key
                 self.private_key = private_key
                 self.certificate = certificate
-                self.user_id = struct.unpack(">L", user_id)
+                self.user_id = struct.unpack(">L", user_id)[0]
+                expiry = struct.unpack("@H", expiry)[0]
 
-                print("Got certificate from the CA")
-
+                print("\nIdentification successful")
+                print("-------------------------")
+                print("User ID: {}".format(self.user_id))
                 print("Public key: " + binascii.hexlify(self.public_key))
+                print("Certificate: " + binascii.hexlify(self.certificate))
+
 
         elif opcode == CERT_REQUEST_INVALID_AUTH:
             nonce, signature = data[:32], data[32:]
@@ -164,5 +169,8 @@ class Node(object):
             self.socket.sendto(CERT_REQUEST_INIT + message, self.ca_address)
 
 
-node = Node(("127.0.0.1", 2350), binascii.unhexlify("b75818634da1c2e6627efbd2179af3fbd980fdbd06fb3d1ab9b2ae9550f801d1"), raw_input("Enter your username: ").strip(), raw_input("Enter your password: ").strip())
+username = raw_input("Enter your username: ").strip()
+password = raw_input("Enter your password: ").strip()
+
+node = Node(("127.0.0.1", 2350), binascii.unhexlify("b75818634da1c2e6627efbd2179af3fbd980fdbd06fb3d1ab9b2ae9550f801d1"), username, password)
 node.run()

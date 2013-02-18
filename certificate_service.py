@@ -81,11 +81,10 @@ class CS(object):
             nonce, username, proposed_pubkey = data[:32], data[32:64], data[64:96]
             username = struct.unpack("32p", username)[0]
             
-            # todo: check username exists, and other flood checks
             message = ed25519.sign(nonce + username + proposed_pubkey, self.public_key, self.private_key)
 
             self.socket.sendto(CERT_REQUEST_INIT + message, address)
-            self.certificate_requests[nonce] = (time.time() + 60, username, proposed_pubkey)
+            self.certificate_requests[nonce] = (time.time() + 10, username, proposed_pubkey)
 
         elif opcode == CERT_REQUEST_CONFIRM:
             if len(data) != (32 + 20 + 64):
@@ -98,7 +97,10 @@ class CS(object):
                 print("received CERT_REQUEST_CONFIRM with unknown nonce")
                 return
 
+            # we don't need to check the timeout - that's done elsewhere
             timeout, username, proposed_pubkey = self.certificate_requests[nonce]
+
+            # only allow one response
             del self.certificate_requests[nonce]
 
             # invalid authentication
@@ -107,6 +109,7 @@ class CS(object):
                 message += ed25519.sign(nonce, self.public_key, self.private_key)
 
                 self.socket.sendto(CERT_REQUEST_INVALID_AUTH + message, address)
+
                 return
 
             if not ed25519.verify(signature, nonce + auth, proposed_pubkey):
@@ -116,7 +119,7 @@ class CS(object):
             scalar = ed25519.create_seed()
             pubkey = ed25519.add_scalar(scalar, proposed_pubkey)
             userid = struct.pack(">L", self.accounts[username][0])
-            expiry = struct.pack(">H", (time.time() / (60 * 60 * 24 * 7)) + 1) # one week
+            expiry = struct.pack(">H", round((time.time() / (60 * 60 * 24 * 7)) + 1)) # one week
 
             message = scalar
             message += userid
