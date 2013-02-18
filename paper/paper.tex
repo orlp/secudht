@@ -1,4 +1,4 @@
-\title{Securing Kademlia with a low overhead PKI}
+\title{Securing Kademlia with a low overhead Public-Key Infrastructure}
 \author{Orson Peters}
 \date{\today}
 
@@ -11,16 +11,14 @@
 \begin{document}
 \maketitle
 
-\begin{abstract}
-\noindent This paper outlines a low overhead protocol that creates a
-robust public-key infrastructure (PKI) to secure Kademlia.  Presented here is a
-centralized solution that uses a certification authority that provides identity
-to nodes. If correctly implemented this solution implicitly resists common
-attacks aimed at DHTs and can be extended in various ways to further limit
-malicious activity to a minimum, depending on the use case.  This solution is
-unprecedented in low overhead (both latency and bandwidth) and supporting a
-recursive/iterative routing hybrid.
-\end{abstract}
+\begin{abstract} \noindent This paper outlines a low overhead protocol that
+creates a robust public-key infrastructure (PKI) to secure Kademlia. Presented
+here is a centralized solution that uses a certification authority that
+provides identity to nodes. If correctly implemented this solution implicitly
+resists common attacks aimed at Kademlia and can be extended in various ways to
+further limit malicious activity to a minimum. This solution is unprecedented
+in low overhead (both latency and bandwidth) and supporting a
+recursive/iterative routing hybrid. \end{abstract}
 
 \section{Introduction}\label{introduction} Kademlia \cite{kademlia} is a
 high-profile Distributed Hash Table (DHT). Used in many P2P applications
@@ -29,7 +27,7 @@ most used DHT around. For good reason, its nifty topology allows for fast,
 flexible and low-overhead routing. However, Kademlia does not concern itself
 with security, and is vulnerable to many attacks.
 
-In this paper we expand on the work in \cite{aiello2008tempering}. Similarly,
+In this paper we expand on the work on Likir \cite{aiello2008tempering}. Similarly,
 we propose a centralized certificate authority (CA) trusted by all
 participating nodes. However, we reduce overhead by introducing optimizations
 such as smaller signatures, timestamps instead of nonces and a novel way to
@@ -37,13 +35,19 @@ pick randomized node ids. Through the use of secure request tokens and node ids
 we also enable a hybrid between recursive and iterative routing for lower
 latency while maintaining security.
 
-First we discuss what attacks Kademlia is vulnerable to. Then we propose the
-protocol, and how this differs from previous solutions. Afterwards we discuss
-how well the attacks on Kademlia are mitigated and what holes are potentially
-still left open. Last, we evaluate the overhead of the system and further
-improvements.
+A large portion of our optimizations come from the usage of Ed25519
+\cite{bernstein2011high}. It is a novel public key signing algorithm, with the
+desirable property of having small signatures and public keys (respectively 64
+and 32 bytes). Furthermore, it is fast, highly secure and allows randomization
+of a public key without knowing the private key.
 
-\section{Terminology}\label{terminology}
+First we discuss which families of attacks Kademlia is vulnerable to. Then we
+propose the protocol, and how this differs from previous solutions. Afterwards
+we discuss how well the attacks on Kademlia are mitigated and which holes are
+potentially still left open. Last, we evaluate the overhead of the system and
+further improvements.
+
+\section{Terminology}
 
 Throughout this paper we use the following terminology:
 
@@ -56,11 +60,6 @@ Throughout this paper we use the following terminology:
     \item[$Verify(s, x, K^+)$] - verification of the Ed25519 signature $s$ of message $x$ with $K^+$
 \end{description}
 
-Ed25519 \cite{bernstein2011high} is a novel public key signing algorithm, with
-the desirable property of having small signatures and public keys (respectively
-64 and 32 bytes). Furthermore, it is fast, highly secure and allows
-randomization of a public key without knowing the private key (more on this
-later). These properties make it ideal for our protocol. 
 
 
 
@@ -86,7 +85,7 @@ communication does not address a receiver for the content the adversary may
 its own right, but may be used to set up other attacks. For example, if a
 secured request for content is sent out, but does not contain the intended
 receiver for the request an adversary might send this request to many content
-providers, effectively creating a cheap and anonymous DDOS attack on the
+providers, effectively creating a cheap and anonymous DDoS attack on the
 requester.
 
 \paragraph{Routing attack.} Each Kademlia node keeps track of a number of nodes
